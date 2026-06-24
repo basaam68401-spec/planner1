@@ -1,0 +1,100 @@
+# پلنر حرفه‌ای ۱۴۰۵ - نسخه ابری Supabase
+
+این نسخه برای اجرای روی GitHub Pages ساخته شده و به Supabase وصل می‌شود.
+
+## فایل‌های اصلی
+
+- `index.html` صفحه اصلی برنامه
+- `styles.css` ظاهر برنامه
+- `app.js` منطق برنامه و همگام‌سازی با Supabase
+- `supabase-config.js` تنظیمات Supabase
+- `supabase_setup.sql` کد ساخت جدول و قوانین امنیتی Supabase
+- `manifest.webmanifest` نصب روی آیفون به‌صورت PWA
+- `sw.js` کش و اجرای آفلاین فایل‌های برنامه
+- `icons/` آیکون‌های وب‌اپ
+
+## مرحله ۱: اجرای SQL در Supabase
+
+داخل پروژه Supabase برو به:
+
+`SQL Editor -> New query`
+
+محتوای فایل `supabase_setup.sql` را کامل کپی کن و Run بزن.
+
+این کار جدول `planner_states` را می‌سازد و Row Level Security را فعال می‌کند تا هر کاربر فقط اطلاعات خودش را ببیند.
+
+## مرحله ۲: تنظیم ورود با ایمیل و رمز
+
+در Supabase برو به:
+
+`Authentication -> Sign In / Providers -> Email`
+
+این حالت‌ها مناسب تست برنامه شخصی است:
+
+- Email provider: ON
+- Confirm email: OFF
+
+اگر Confirm email روشن بماند، بعد از ثبت‌نام باید ایمیل را تأیید کنی.
+
+## مرحله ۳: تنظیم کانفیگ
+
+فایل `supabase-config.js` با اطلاعات پروژه شما پر شده است:
+
+```js
+window.PLANNER_SUPABASE_CONFIG = {
+  url: 'https://esrqfulstdqnpbaldbko.supabase.co',
+  anonKey: '...'
+};
+```
+
+در این فایل فقط publishable/anon key قرار می‌گیرد. هرگز service_role یا secret key را اینجا قرار نده.
+
+## مرحله ۴: آپلود روی GitHub Pages
+
+فایل‌های داخل همین پوشه را مستقیماً در ریشه Repository آپلود کن، نه خود پوشه را.
+
+ساختار درست:
+
+```text
+index.html
+styles.css
+app.js
+supabase-config.js
+supabase_setup.sql
+manifest.webmanifest
+sw.js
+icons/
+README_FA.md
+```
+
+بعد از Commit، لینک را با این آدرس باز کن:
+
+```text
+https://basaam68401-spec.github.io/myplanner/?v=supabase1
+```
+
+اگر نسخه قبلی را دیدی، یک بار `Ctrl + Shift + R` بزن یا در آیفون صفحه را کامل Refresh کن.
+
+## استفاده
+
+1. برنامه را باز کن.
+2. روی «ورود ابری» بزن.
+3. اگر حساب نداری، روی «ساخت حساب» بزن.
+4. بعد از ورود، اگر ابر خالی باشد، اطلاعات لوکال خودکار در Supabase ذخیره می‌شود.
+5. از این به بعد هر تغییری در کارها/برنامه‌ها ذخیره ابری می‌شود.
+
+## نکات مهم
+
+- اطلاعات همچنان روی مرورگر هم ذخیره می‌شود، بنابراین اگر اینترنت قطع باشد، برنامه کار می‌کند.
+- در نسخه Supabase، همگام‌سازی آفلاین کاملاً خودکار مثل Firebase نیست؛ برنامه ابتدا لوکال ذخیره می‌کند و وقتی آنلاین و وارد حساب باشی، تغییرات را در Supabase ذخیره می‌کند.
+- اگر با دو دستگاه همزمان کار می‌کنی، بهتر است بعد از ورود در دستگاه دوم، صفحه را یک بار Refresh کنی تا آخرین داده ابری دریافت شود.
+- دکمه «آپلود لوکال به ابر» برای زمانی است که می‌خواهی داده‌های همین دستگاه را روی Supabase بنویسی.
+
+
+## رفع خطای Cannot access 'id' before initialization
+
+در این نسخه، تابع شناسه‌ساز به شکل پایدار اصلاح شده و نسخه کش به `supabase2` تغییر کرده است. بعد از آپلود روی GitHub Pages، لینک را با این آدرس باز کنید:
+
+`https://basaam68401-spec.github.io/myplanner/?v=supabase2`
+
+اگر همچنان نسخه قبلی دیده شد، در Chrome دسکتاپ `Ctrl + Shift + R` بزنید. در آیفون Safari، از Settings > Safari > Advanced > Website Data، داده‌های سایت `github.io` یا `basaam68401-spec.github.io` را حذف کنید و دوباره لینک بالا را باز کنید.
