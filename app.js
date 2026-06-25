@@ -93,4 +93,158 @@ function goalDueISO(k,gid,iso){let g=goalFind(k,gid);if(!g)return;let jd=isoToJ(
 window.timelineClick=timelineClick;window.goalDueISO=goalDueISO;
 
 
+// ===== Planner v6 cloud reliability: timeout, retry, connection test, no infinite loading =====
+const CLOUD_LOGIN_TIMEOUT_MS = 16000;
+const CLOUD_DATA_TIMEOUT_MS = 22000;
+function cloudWithTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=>setTimeout(()=>{
+      let e = new Error(label || 'درخواست بیش از حد طول کشید.');
+      e.code = 'PLANNER_TIMEOUT';
+      reject(e);
+    }, ms))
+  ]);
+}
+function cloudSetBusy(on, text){
+  cloud.busy = !!on;
+  ['signInBtn','signUpBtn','forceCloudBtn','signOutBtn','cloudTestBtn'].forEach(id=>{
+    let b = document.getElementById(id);
+    if(b) b.disabled = !!on;
+  });
+  if(text) cloudMsg(text);
+}
+function cloudResetBusy(){
+  cloud.busy = false;
+  ['signInBtn','signUpBtn','forceCloudBtn','signOutBtn','cloudTestBtn'].forEach(id=>{
+    let b = document.getElementById(id);
+    if(b) b.disabled = false;
+  });
+}
+function cloudBuildPanel(){
+  let btn=$('#cloudLoginBtn'),dlg=$('#authDialog');
+  if(btn)btn.onclick=()=>{cloudPaint();dlg.showModal()};
+  if($('#closeAuth'))$('#closeAuth').onclick=()=>{cloudResetBusy();dlg.close()};
+  if($('#authForm'))$('#authForm').onsubmit=e=>{e.preventDefault();cloudSignIn()};
+  if($('#signUpBtn'))$('#signUpBtn').onclick=()=>cloudSignUp();
+  if($('#signOutBtn'))$('#signOutBtn').onclick=()=>cloudSignOut();
+  if($('#forceCloudBtn'))$('#forceCloudBtn').onclick=()=>cloudSaveNow(true);
+  let actions=document.querySelector('#authDialog .authActions');
+  if(actions && !$('#cloudTestBtn')){
+    let b=document.createElement('button');
+    b.id='cloudTestBtn';
+    b.type='button';
+    b.textContent='تست اتصال';
+    b.onclick=cloudTestConnection;
+    actions.appendChild(b);
+  }
+  let aside=document.querySelector('aside');
+  if(aside&&!$('#cloudPanel')){
+    let box=document.createElement('section');
+    box.id='cloudPanel';
+    box.className='cloudPanel';
+    box.innerHTML='<b>همگام‌سازی ابری</b><div id="cloudStatus" class="cloudStatus">در حال بررسی...</div><button id="cloudPanelBtn" type="button">ورود / تنظیم حساب</button><small>داده‌ها روی همین دستگاه هم ذخیره می‌شوند و پس از ورود با Supabase همگام می‌شوند.</small>';
+    let note=aside.querySelector('.note');
+    aside.insertBefore(box,note);
+    box.querySelector('#cloudPanelBtn').onclick=()=>{cloudPaint();dlg.showModal()}
+  }
+}
+function cloudAuthError(e){
+  let c=e?.code||'',m=e?.message||String(e||'');
+  if(c==='PLANNER_TIMEOUT'||m.includes('PLANNER_TIMEOUT')||m.includes('بیش از حد طول'))return 'اتصال به Supabase بیش از حد طول کشید. برنامه لوکال سالم است؛ یک‌بار تست اتصال را بزن یا با اینترنت/VPN دیگر امتحان کن.';
+  if(m.includes('Failed to fetch')||m.includes('NetworkError')||m.includes('Load failed')||m.includes('fetch'))return 'ارتباط با Supabase برقرار نشد. معمولاً مشکل از فیلتر/VPN/DNS یا قطع دسترسی به supabase.co است.';
+  if(m.includes('Invalid login credentials'))return'ایمیل یا رمز عبور اشتباه است.';
+  if(m.includes('Email not confirmed'))return'ایمیل هنوز تأیید نشده است. در Supabase گزینه Confirm email را خاموش کن یا ایمیل را تأیید کن.';
+  if(m.includes('User already registered'))return'با این ایمیل قبلاً حساب ساخته شده است.';
+  if(m.includes('Password'))return'رمز عبور باید حداقل ۶ کاراکتر باشد.';
+  if(c==='23503')return'کاربر در Supabase ساخته نشده یا ورود انجام نشده است.';
+  return m||'خطای نامشخص در ورود ابری.'
+}
+async function cloudTestConnection(){
+  if(!cloud.configured)return cloudMsg('supabase-config.js تنظیم نشده است.',true);
+  let cfg=window.PLANNER_SUPABASE_CONFIG;
+  cloudSetBusy(true,'در حال تست اتصال به Supabase...');
+  try{
+    let res=await cloudWithTimeout(fetch(cfg.url+'/auth/v1/settings',{cache:'no-store'}),9000,'timeout');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    cloudMsg('اتصال به Supabase برقرار است. حالا دوباره ورود را بزن.');
+    cloud.status='اتصال Supabase برقرار است';cloudPaint();
+  }catch(e){
+    cloud.status='تست اتصال ناموفق';cloudPaint();
+    cloudMsg(cloudAuthError(e),true);
+  }finally{cloudResetBusy()}
+}
+async function cloudSignIn(){
+  if(cloud.busy)return;
+  if(!cloud.enabled)return cloudMsg('ابتدا supabase-config.js را با مشخصات Supabase تکمیل کن.',true);
+  if(!navigator.onLine)return cloudMsg('مرورگر آفلاین است. اینترنت دستگاه را بررسی کن.',true);
+  let email=$('#authEmail').value.trim(),password=$('#authPass').value;
+  if(!email||!password)return;
+  cloudSetBusy(true,'در حال ورود... اگر بیش از ۱۵ ثانیه طول بکشد، پیام خطا نمایش داده می‌شود.');
+  try{
+    let {data,error}=await cloudWithTimeout(cloud.client.auth.signInWithPassword({email,password}),CLOUD_LOGIN_TIMEOUT_MS,'timeout-login');
+    if(error)throw error;
+    if(data?.user){cloud.user=data.user;cloud.status='ورود انجام شد؛ در حال دریافت اطلاعات...';cloudPaint()}
+    cloudMsg('ورود انجام شد. همگام‌سازی شروع شد.');
+  }catch(e){
+    cloud.status='ورود ناموفق یا کند';cloudPaint();cloudMsg(cloudAuthError(e),true);
+  }finally{cloudResetBusy()}
+}
+async function cloudSignUp(){
+  if(cloud.busy)return;
+  if(!cloud.enabled)return cloudMsg('ابتدا supabase-config.js را با مشخصات Supabase تکمیل کن.',true);
+  if(!navigator.onLine)return cloudMsg('مرورگر آفلاین است. اینترنت دستگاه را بررسی کن.',true);
+  let email=$('#authEmail').value.trim(),password=$('#authPass').value;
+  if(!email||!password)return;
+  cloudSetBusy(true,'در حال ساخت حساب...');
+  try{
+    let {data,error}=await cloudWithTimeout(cloud.client.auth.signUp({email,password}),CLOUD_LOGIN_TIMEOUT_MS,'timeout-signup');
+    if(error)throw error;
+    if(data?.user){cloud.user=data.user;cloud.status='حساب ساخته شد؛ در حال همگام‌سازی...';cloudPaint()}
+    cloudMsg('حساب ساخته شد. اگر تأیید ایمیل خاموش باشد، همگام‌سازی شروع می‌شود.');
+  }catch(e){
+    cloud.status='ساخت حساب ناموفق یا کند';cloudPaint();cloudMsg(cloudAuthError(e),true);
+  }finally{cloudResetBusy()}
+}
+async function cloudOnAuth(u){
+  cloud.user=u||null;cloud.ready=false;
+  if(!u){cloud.status='وارد نشده‌اید';cloudPaint();return}
+  cloud.status='متصل شد؛ در حال دریافت اطلاعات از Supabase...';cloudPaint();
+  cloudPullNow();
+}
+async function cloudPullNow(){
+  if(!cloud.user||!cloud.client)return;
+  try{
+    let req=cloud.client.from(SUPABASE_STATE_TABLE).select('state,updated_at,local_updated_at').eq('user_id',cloud.user.id).maybeSingle();
+    let {data,error}=await cloudWithTimeout(req,CLOUD_DATA_TIMEOUT_MS,'timeout-pull');
+    if(error)throw error;
+    cloud.ready=true;
+    if(!data||!data.state){
+      cloud.status='ابر خالی بود؛ اطلاعات لوکال روی Supabase ذخیره شد.';cloudPaint();
+      await cloudSaveNow(true);return
+    }
+    let state=data.state;
+    if(state&&Array.isArray(state.tasks)){
+      let incoming=JSON.stringify(state),local=JSON.stringify(S);
+      if(incoming!==local){cloud.applying=true;S=Object.assign(seed(),state);localStorage.setItem(K,JSON.stringify(S));window.S=S;cloud.applying=false;cloud.status='همگام‌سازی شد';cloudPaint();render()}
+      else{cloud.status='اطلاعات لوکال و ابری یکسان است.';cloudPaint()}
+    }else{cloud.status='داده ابری معتبر نبود؛ اطلاعات لوکال حفظ شد.';cloudPaint()}
+  }catch(e){
+    cloud.ready=false;cloud.status='دریافت ابری ناموفق؛ حالت لوکال فعال است';cloudPaint();cloudMsg('دریافت از Supabase انجام نشد: '+cloudAuthError(e),true)
+  }
+}
+async function cloudSaveNow(force=false){
+  if(!cloud.user||!cloud.client||cloud.applying)return;
+  try{
+    let clean=JSON.parse(JSON.stringify(S));cloud.status='در حال ذخیره ابری...';cloudPaint();
+    let payload={user_id:cloud.user.id,state:clean,local_updated_at:clean.updatedAt||new Date().toISOString(),schema:'planner-1405-supabase-v6'};
+    let req=cloud.client.from(SUPABASE_STATE_TABLE).upsert(payload,{onConflict:'user_id'});
+    let {error}=await cloudWithTimeout(req,CLOUD_DATA_TIMEOUT_MS,'timeout-save');
+    if(error)throw error;
+    cloud.ready=true;cloud.status='ذخیره ابری انجام شد';cloudPaint();if(force)cloudMsg('اطلاعات لوکال با Supabase همگام شد.')
+  }catch(e){cloud.status='ذخیره ابری ناموفق؛ داده‌ها لوکال حفظ شد';cloudPaint();cloudMsg('ذخیره ابری انجام نشد: '+cloudAuthError(e),true)}
+}
+window.cloudSaveNow=cloudSaveNow;window.cloudPullNow=cloudPullNow;window.cloudTestConnection=cloudTestConnection;
+
+
 init();
