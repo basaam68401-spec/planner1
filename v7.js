@@ -1,8 +1,8 @@
 'use strict';
 
-// ===== Planner Life OS 7.1 =====
+// ===== Planner Life OS 7.2 =====
 // لایه ارتقای امن: تقویم چندساله، نسخه‌بندی داده، بکاپ هفتگی و همگام‌سازی رکوردی.
-const V7_SCHEMA = 'planner-life-os-v7.1';
+const V7_SCHEMA = 'planner-life-os-v7.2';
 const V7_BACKUP_DB = 'planner-life-os-backups';
 const V7_BACKUP_STORE = 'snapshots';
 const V7_MAX_BACKUPS = 8;
@@ -91,7 +91,7 @@ function v7Migrate(){
   const before = v7Clone(S);
   const previous = S?.meta?.schemaVersion || '';
   if(previous !== V7_SCHEMA){
-    v7CreateSnapshotFromState(before,'پیش از ارتقا به ۷.۱').catch(()=>{});
+    v7CreateSnapshotFromState(before,'پیش از ارتقا به ۷.۲').catch(()=>{});
     S.meta = S.meta || {};
     S.meta.previousSchema = previous || 'planner-v6';
     S.meta.migratedAt = v7Now();
@@ -141,7 +141,7 @@ function v7SyncYearUi(){
   }
   const brand=document.getElementById('brandYear'); if(brand)brand.textContent=fa(C.year);
   const label=document.getElementById('calendarLabel'); if(label)label.textContent='تقویم شمسی چندساله · سال کاری '+fa(C.year);
-  const title=document.querySelector('title'); if(title)title.textContent='Planner Life OS 7.1';
+  const title=document.querySelector('title'); if(title)title.textContent='Planner Life OS 7.2';
 }
 function v7SetActiveYear(y){
   y=+y;

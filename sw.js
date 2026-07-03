@@ -1,5 +1,5 @@
-const CACHE='planner-life-os-v7-1';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='planner-life-os-v7-2';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./v72.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
