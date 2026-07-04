@@ -1,10 +1,10 @@
 {
   "name": "Planner Life OS",
   "short_name": "Life OS",
-  "description": "سیستم شخصی مدیریت زندگی، اهداف، پروژه‌ها و برنامه‌ریزی با تقویم شمسی چندساله و همگام‌سازی ابری.",
+  "description": "سیستم شخصی مدیریت زندگی، اهداف، پروژه‌ها، سیستم‌ها، مرورها و چرخ زندگی با تقویم شمسی چندساله و همگام‌سازی ابری.",
   "lang": "fa",
   "dir": "rtl",
-  "start_url": "./index.html?v=planner-v7-2",
+  "start_url": "./index.html?v=planner-v7-3",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

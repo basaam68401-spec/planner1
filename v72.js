@@ -1,8 +1,8 @@
 'use strict';
 
-// ===== Planner Life OS 7.2 =====
+// ===== Planner Life OS 7.3 =====
 // اهداف حرفه‌ای، پروژه‌های متصل و سیستم‌ساز شخصی.
-const V72_SCHEMA = 'planner-life-os-v7.2';
+const V72_SCHEMA = 'planner-life-os-v7.3';
 const V72_ACTIVE_GOAL_LIMIT = 7;
 const V72_FOCUS_GOAL_LIMIT = 3;
 const V72_BOTTLENECK_LIMIT = 3;
@@ -514,8 +514,8 @@ function v72Init(){
   if(typeof fill==='function')fill('#type',C.types.map(x=>[x,x]));
   v72BuildDialogs();v72InstallTaskLinks();
   document.querySelectorAll('#v72AreasDialog input').forEach(x=>x.addEventListener('input',v72UpdateAreaTotal));
-  const oldTitle=document.querySelector('title');if(oldTitle)oldTitle.textContent='Planner Life OS 7.2';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.2 · تقویم شمسی چندساله';
+  const oldTitle=document.querySelector('title');if(oldTitle)oldTitle.textContent='Planner Life OS 7.3';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.3 · تقویم شمسی چندساله';
   localStorage.setItem(K,JSON.stringify(S));buildNav();render();
 }
 
