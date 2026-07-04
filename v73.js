@@ -1,8 +1,8 @@
 'use strict';
 
-// ===== Planner Life OS 7.4 =====
+// ===== Planner Life OS 7.5 =====
 // داشبورد مرکز فرماندهی، چرخ زندگی، امتیاز LEVEL UP، مرورهای روزانه/هفتگی و گزارش‌ها.
-const V73_SCHEMA='planner-life-os-v7.4';
+const V73_SCHEMA='planner-life-os-v7.5';
 const V73_DEFAULT_LAYOUT=['alerts','focus','systems','wheel','heat','today','trends'];
 
 function v73Now(){return new Date().toISOString()}
@@ -343,8 +343,8 @@ dash=v73Dashboard;window.dash=dash;
 
 function v73Init(){
   v73EnsureState();v73BuildAreaDialog();v73BuildReviewDialogs();v73CaptureScore();
-  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.4';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.4 · مرکز فرماندهی زندگی';
+  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.5';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.5 · مرکز فرماندهی زندگی';
   const pdf=document.getElementById('pdfBtn');if(pdf){pdf.textContent='گزارش PDF';pdf.onclick=v73PrintPersonal}
   buildNav();render();
 }

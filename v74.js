@@ -1,8 +1,8 @@
 'use strict';
 
-// ===== Planner Life OS 7.4 =====
+// ===== Planner Life OS 7.5 =====
 // مدیریت مالی شخصی، درآمد/هزینه، بودجه، پس‌انداز، سرمایه‌گذاری، وام و اقساط و پیش‌بینی جریان نقدی.
-const V74_SCHEMA='planner-life-os-v7.4';
+const V74_SCHEMA='planner-life-os-v7.5';
 const V74_TX_TYPES=[['income','درآمد'],['expense','هزینه']];
 const V74_TX_STATUSES=[['actual','قطعی/انجام‌شده'],['planned','برنامه‌ریزی‌شده'],['probable','احتمالی']];
 const V74_ALLOCATION_TYPES=[['saving','پس‌انداز'],['investment','سرمایه‌گذاری']];
@@ -325,8 +325,8 @@ render=function(){if(view==='financeV7'){v74FinanceView();return}if(view==='loan
 
 function v74Init(){
   v74EnsureState();v74BuildDialogs();
-  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.4';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.4 · مدیریت کامل زندگی و مالی';
+  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.5';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.5 · مدیریت کامل زندگی و مالی';
   buildNav();render();
 }
 
