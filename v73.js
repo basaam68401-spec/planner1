@@ -1,8 +1,8 @@
 'use strict';
 
-// ===== Planner Life OS 7.3 =====
+// ===== Planner Life OS 7.4 =====
 // داشبورد مرکز فرماندهی، چرخ زندگی، امتیاز LEVEL UP، مرورهای روزانه/هفتگی و گزارش‌ها.
-const V73_SCHEMA='planner-life-os-v7.3';
+const V73_SCHEMA='planner-life-os-v7.4';
 const V73_DEFAULT_LAYOUT=['alerts','focus','systems','wheel','heat','today','trends'];
 
 function v73Now(){return new Date().toISOString()}
@@ -188,9 +188,10 @@ function v73Dashboard(){
     </section>
     <section id="v73DashboardGrid" class="grid dash v73DashboardGrid">${sorted.map(x=>x.html).join('')}</section>`;
   requestAnimationFrame(()=>{
-    v73DrawWheel(document.getElementById('v73WheelCanvas'));
-    line(document.getElementById('v73Trend'),Array.from({length:14},(_,i)=>{const d=addDays(v73Today(),i-13);return{label:fa(par(d).jd),value:v73TaskCompletion(dayTasks(d))}}));
-    dough(document.getElementById('v73Priority'),group(inRange(addDays(v73Today(),-30),v73Today()),'priority'));
+    const wheel=document.getElementById('v73WheelCanvas'),trend=document.getElementById('v73Trend'),priority=document.getElementById('v73Priority');
+    if(wheel)v73DrawWheel(wheel);
+    if(trend)line(trend,Array.from({length:14},(_,i)=>{const d=addDays(v73Today(),i-13);return{label:fa(par(d).jd),value:v73TaskCompletion(dayTasks(d))}}));
+    if(priority)dough(priority,group(inRange(addDays(v73Today(),-30),v73Today()),'priority'));
     v73BindDashboardDnD();
   });
 }
@@ -342,8 +343,8 @@ dash=v73Dashboard;window.dash=dash;
 
 function v73Init(){
   v73EnsureState();v73BuildAreaDialog();v73BuildReviewDialogs();v73CaptureScore();
-  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.3';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.3 · مرکز فرماندهی زندگی';
+  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.4';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.4 · مرکز فرماندهی زندگی';
   const pdf=document.getElementById('pdfBtn');if(pdf){pdf.textContent='گزارش PDF';pdf.onclick=v73PrintPersonal}
   buildNav();render();
 }

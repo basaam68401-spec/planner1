@@ -1,8 +1,8 @@
 'use strict';
 
-// ===== Planner Life OS 7.3 =====
+// ===== Planner Life OS 7.4 =====
 // لایه ارتقای امن: تقویم چندساله، نسخه‌بندی داده، بکاپ هفتگی و همگام‌سازی رکوردی.
-const V7_SCHEMA = 'planner-life-os-v7.3';
+const V7_SCHEMA = 'planner-life-os-v7.4';
 const V7_BACKUP_DB = 'planner-life-os-backups';
 const V7_BACKUP_STORE = 'snapshots';
 const V7_MAX_BACKUPS = 8;
@@ -70,6 +70,9 @@ function v7EnsureMeta(state){
   state.weeklyReviews = state.weeklyReviews || {};
   state.levelUpHistory = state.levelUpHistory || {};
   state.finance = state.finance || {balance:0,incomes:[],expenses:[],budgets:[],savings:[],investments:[]};
+  state.financeTransactions = Array.isArray(state.financeTransactions) ? state.financeTransactions : [];
+  state.financeBudgets = Array.isArray(state.financeBudgets) ? state.financeBudgets : [];
+  state.financeAllocations = Array.isArray(state.financeAllocations) ? state.financeAllocations : [];
   state.loans = Array.isArray(state.loans) ? state.loans : [];
   state.installments = Array.isArray(state.installments) ? state.installments : [];
   state.contentItems = Array.isArray(state.contentItems) ? state.contentItems : [];
@@ -82,7 +85,7 @@ function v7EnsureMeta(state){
   (state.habits?.items||[]).forEach(x=>{ if(!x.updatedAt) x.updatedAt=x.createdAt||stateStamp; });
   Object.values(state.goals||{}).forEach(arr=>(arr||[]).forEach(x=>{ if(!x.updatedAt) x.updatedAt=x.createdAt||stateStamp; }));
   (state.year?.pillars||[]).forEach(x=>{ if(!x.updatedAt) x.updatedAt=x.createdAt||stateStamp; });
-  ['areas','goalsV7','projects','systems','systemRuns','loans','installments','contentItems','notifications'].forEach(k=>{
+  ['areas','goalsV7','projects','systems','systemRuns','financeTransactions','financeBudgets','financeAllocations','loans','installments','contentItems','notifications'].forEach(k=>{
     (state[k]||[]).forEach(x=>{ if(!x.updatedAt) x.updatedAt=x.createdAt||stateStamp; });
   });
   return state;
@@ -92,7 +95,7 @@ function v7Migrate(){
   const before = v7Clone(S);
   const previous = S?.meta?.schemaVersion || '';
   if(previous !== V7_SCHEMA){
-    v7CreateSnapshotFromState(before,'پیش از ارتقا به ۷.۳').catch(()=>{});
+    v7CreateSnapshotFromState(before,'پیش از ارتقا به ۷.۴').catch(()=>{});
     S.meta = S.meta || {};
     S.meta.previousSchema = previous || 'planner-v6';
     S.meta.migratedAt = v7Now();
@@ -142,7 +145,7 @@ function v7SyncYearUi(){
   }
   const brand=document.getElementById('brandYear'); if(brand)brand.textContent=fa(C.year);
   const label=document.getElementById('calendarLabel'); if(label)label.textContent='تقویم شمسی چندساله · سال کاری '+fa(C.year);
-  const title=document.querySelector('title'); if(title)title.textContent='Planner Life OS 7.3';
+  const title=document.querySelector('title'); if(title)title.textContent='Planner Life OS 7.4';
 }
 function v7SetActiveYear(y){
   y=+y;
@@ -439,7 +442,7 @@ function v7MergeStates(localState,remoteState){
   out.daily=v7MergeMap(l.daily,r.daily,l,r,'daily',{local:l.meta?.mapUpdatedAt,remote:r.meta?.mapUpdatedAt});
   out.weekly=v7MergeMap(l.weekly,r.weekly,l,r,'weekly',{local:l.meta?.mapUpdatedAt,remote:r.meta?.mapUpdatedAt});
   out.monthly=v7MergeMap(l.monthly,r.monthly,l,r,'monthly',{local:l.meta?.mapUpdatedAt,remote:r.meta?.mapUpdatedAt});
-  ['areas','goalsV7','projects','systems','systemRuns','loans','installments','contentItems','notifications'].forEach(k=>{out[k]=v7MergeArray(l[k],r[k],k,t)});
+  ['areas','goalsV7','projects','systems','systemRuns','financeTransactions','financeBudgets','financeAllocations','loans','installments','contentItems','notifications'].forEach(k=>{out[k]=v7MergeArray(l[k],r[k],k,t)});
   out.dailyReviews=v7MergeMap(l.dailyReviews,r.dailyReviews,l,r,'dailyReviews',{local:l.meta?.mapUpdatedAt,remote:r.meta?.mapUpdatedAt});
   out.weeklyReviews=v7MergeMap(l.weeklyReviews,r.weeklyReviews,l,r,'weeklyReviews',{local:l.meta?.mapUpdatedAt,remote:r.meta?.mapUpdatedAt});
   out.levelUpHistory=v7MergeMap(l.levelUpHistory,r.levelUpHistory,l,r,'levelUpHistory',{local:l.meta?.mapUpdatedAt,remote:r.meta?.mapUpdatedAt});
