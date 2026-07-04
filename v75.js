@@ -156,11 +156,38 @@ async function v75SendReportBrowser(id){const r=S.autoReports.find(x=>x.id===id)
 window.v75GenerateCurrentReport=v75GenerateCurrentReport;window.v75CopyReport=v75CopyReport;window.v75SendReportBrowser=v75SendReportBrowser;
 
 async function v75SendTelegram(text,{key='',type='manual',silent=false}={}){
-  const s=v75Settings();if(!s.telegramEnabled&&!silent)throw new Error('ابتدا تلگرام را از صفحه اعلان و اتوماسیون فعال کن.');if(!s.telegramChatId)throw new Error('Chat ID تلگرام ثبت نشده است.');if(!cloud?.client||!cloud?.user)throw new Error('برای ارسال تلگرام باید وارد حساب ابری باشی.');
-  const dedupeKey=key||`telegram:${type}:${todayJ()}:${v75Hash(text)}`;if(key&&v75HasSent('telegram',dedupeKey))return {skipped:true};
+  const s=v75Settings();
+  if(!s.telegramEnabled&&!silent)throw new Error('ابتدا تلگرام را از صفحه اعلان و اتوماسیون فعال کن.');
+  if(!s.telegramChatId)throw new Error('Chat ID تلگرام ثبت نشده است.');
+  if(!cloud?.client||!cloud?.user)throw new Error('برای ارسال تلگرام باید وارد حساب ابری باشی.');
+
+  const {data:sessionData,error:sessionError}=await cloud.client.auth.getSession();
+  const accessToken=sessionData?.session?.access_token;
+  if(sessionError||!accessToken)throw new Error('نشست ابری معتبر نیست. از حساب ابری خارج شو و دوباره وارد شو.');
+
+  const dedupeKey=key||`telegram:${type}:${todayJ()}:${v75Hash(text)}`;
+  if(key&&v75HasSent('telegram',dedupeKey))return {skipped:true};
+
   const fn=s.telegramFunctionName||'planner-telegram';
-  const {data,error}=await cloud.client.functions.invoke(fn,{body:{chatId:String(s.telegramChatId).trim(),text:v75TelegramText(text),kind:type}});if(error)throw error;if(data?.ok===false)throw new Error(data.error||'ارسال تلگرام ناموفق بود.');
-  v75Log('telegram',type,'ارسال تلگرام',String(text).slice(0,240),dedupeKey,'sent');return data||{ok:true};
+  const {data,error}=await cloud.client.functions.invoke(fn,{
+    headers:{Authorization:`Bearer ${accessToken}`},
+    body:{chatId:String(s.telegramChatId).trim(),text:v75TelegramText(text),kind:type}
+  });
+
+  if(error){
+    let detail=error.message||'Edge Function خطا برگرداند.';
+    try{
+      if(error.context&&typeof error.context.clone==='function'){
+        const payload=await error.context.clone().json();
+        detail=payload?.error||payload?.message||detail;
+      }
+    }catch(_){ }
+    throw new Error(detail);
+  }
+  if(data?.ok===false)throw new Error(data.error||'ارسال تلگرام ناموفق بود.');
+
+  v75Log('telegram',type,'ارسال تلگرام',String(text).slice(0,240),dedupeKey,'sent');
+  return data||{ok:true};
 }
 async function v75TestTelegram(){const btn=document.getElementById('v75TelegramTest');if(btn)btn.disabled=true;try{await v75SendTelegram(`✅ اتصال Planner Life OS 7.5 با موفقیت برقرار شد.\n${fa(todayJ())}`,{type:'test'});alert('پیام آزمایشی ارسال شد.')}catch(e){alert('ارسال ناموفق: '+(e.message||e))}finally{if(btn)btn.disabled=false}}
 async function v75SendDailyTelegram(){try{await v75SendTelegram(v75DailyDigest().text,{type:'daily',key:`daily:${todayJ()}:manual:${Date.now()}`});alert('خلاصه امروز ارسال شد.')}catch(e){alert('ارسال ناموفق: '+(e.message||e))}}
