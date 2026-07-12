@@ -1,5 +1,5 @@
-const CACHE='planner-life-os-v7-5';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./v72.js','./v73.js','./v74.js','./v75.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='planner-life-for-soil-v7-6';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./v72.js','./v73.js','./v74.js','./v75.js','./v76.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
@@ -30,7 +30,7 @@ self.addEventListener('fetch',event=>{
 self.addEventListener('message',event=>{
   if(event.data?.type!=='SHOW_NOTIFICATION')return;
   const {title,options}=event.data;
-  event.waitUntil(self.registration.showNotification(title||'Planner Life OS',options||{}));
+  event.waitUntil(self.registration.showNotification(title||'Planner Life for Soil',options||{}));
 });
 
 self.addEventListener('notificationclick',event=>{

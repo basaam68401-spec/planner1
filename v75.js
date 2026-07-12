@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life OS 7.5 =====
+// ===== Planner Life for Soil 7.6 =====
 // ثبت سریع و صوتی فارسی، اعلان مرورگر، گزارش خودکار و زیرساخت امن ربات تلگرام.
 const V75_SCHEMA='planner-life-os-v7.5';
 const V75_NOTIFICATION_LIMIT=250;
@@ -145,7 +145,7 @@ function v75DailyDigest(){
 function v75WeeklyReport(start=week(todayJ()).start,force=false){
   const id=`weekly_${start}`;let row=(S.autoReports||[]).find(r=>r.id===id);if(row&&!force)return row;
   const a=v73WeeklyAuto(start),review=S.weeklyReviews?.[start]||{},score=v73LevelUpScore(),red=v73Alerts().filter(x=>x.level==='red').length,fin=typeof v74Forecast==='function'?v74Forecast(30).forecast:null;
-  const text=[`📈 گزارش هفتگی Planner Life OS`,`هفته ${fa(start)} تا ${fa(a.end)}`,'',`تحقق کارها: ${fa(a.completion)}٪`,`انجام‌شده: ${fa(a.done)}`,`عقب‌افتاده: ${fa(a.late)}`,`اجرای سیستم‌ها: ${fa(a.systemCompleted)} از ${fa(a.systemRuns)}`,`پیشرفت اهداف ۹۰روزه: ${fa(a.focus)}٪`,`انرژی میانگین: ${a.energy?fa(a.energy)+'/۵':'ثبت نشده'}`,`LEVEL UP: ${fa(score)}٪`,`هشدار بحرانی: ${fa(red)}`,fin!=null?`مانده پیش‌بینی‌شده ۳۰روزه: ${v74SignedMoney(fin)}`:'',review.wins?`بردهای هفته: ${review.wins}`:'',review.keyDecision?`تصمیم هفته آینده: ${review.keyDecision}`:''].filter(Boolean).join('\n');
+  const text=[`📈 گزارش هفتگی Planner Life for Soil`,`هفته ${fa(start)} تا ${fa(a.end)}`,'',`تحقق کارها: ${fa(a.completion)}٪`,`انجام‌شده: ${fa(a.done)}`,`عقب‌افتاده: ${fa(a.late)}`,`اجرای سیستم‌ها: ${fa(a.systemCompleted)} از ${fa(a.systemRuns)}`,`پیشرفت اهداف ۹۰روزه: ${fa(a.focus)}٪`,`انرژی میانگین: ${a.energy?fa(a.energy)+'/۵':'ثبت نشده'}`,`LEVEL UP: ${fa(score)}٪`,`هشدار بحرانی: ${fa(red)}`,fin!=null?`مانده پیش‌بینی‌شده ۳۰روزه: ${v74SignedMoney(fin)}`:'',review.wins?`بردهای هفته: ${review.wins}`:'',review.keyDecision?`تصمیم هفته آینده: ${review.keyDecision}`:''].filter(Boolean).join('\n');
   const now=v75Now();const next={id,type:'weekly',title:`گزارش هفتگی ${fa(start)}`,weekStart:start,weekEnd:a.end,metrics:{...a,levelUp:score,critical:red,finance30:fin},text,createdAt:row?.createdAt||now,updatedAt:now};
   if(row)Object.assign(row,next);else S.autoReports.unshift(next);S.autoReports=S.autoReports.slice(0,V75_REPORT_LIMIT);save();return next;
 }
@@ -189,7 +189,7 @@ async function v75SendTelegram(text,{key='',type='manual',silent=false}={}){
   v75Log('telegram',type,'ارسال تلگرام',String(text).slice(0,240),dedupeKey,'sent');
   return data||{ok:true};
 }
-async function v75TestTelegram(){const btn=document.getElementById('v75TelegramTest');if(btn)btn.disabled=true;try{await v75SendTelegram(`✅ اتصال Planner Life OS 7.5 با موفقیت برقرار شد.\n${fa(todayJ())}`,{type:'test'});alert('پیام آزمایشی ارسال شد.')}catch(e){alert('ارسال ناموفق: '+(e.message||e))}finally{if(btn)btn.disabled=false}}
+async function v75TestTelegram(){const btn=document.getElementById('v75TelegramTest');if(btn)btn.disabled=true;try{await v75SendTelegram(`✅ اتصال Planner Life for Soil 7.6 با موفقیت برقرار شد.\n${fa(todayJ())}`,{type:'test'});alert('پیام آزمایشی ارسال شد.')}catch(e){alert('ارسال ناموفق: '+(e.message||e))}finally{if(btn)btn.disabled=false}}
 async function v75SendDailyTelegram(){try{await v75SendTelegram(v75DailyDigest().text,{type:'daily',key:`daily:${todayJ()}:manual:${Date.now()}`});alert('خلاصه امروز ارسال شد.')}catch(e){alert('ارسال ناموفق: '+(e.message||e))}}
 async function v75SendReportTelegram(id){const r=S.autoReports.find(x=>x.id===id);if(!r)return;try{await v75SendTelegram(r.text,{type:'weekly',key:`weekly:${r.weekStart}:manual:${Date.now()}`});alert('گزارش هفتگی ارسال شد.')}catch(e){alert('ارسال ناموفق: '+(e.message||e))}}
 window.v75TestTelegram=v75TestTelegram;window.v75SendDailyTelegram=v75SendDailyTelegram;window.v75SendReportTelegram=v75SendReportTelegram;
@@ -262,7 +262,7 @@ function v75BindGlobal(){
 }
 function v75Init(){
   v75EnsureState();v75BuildUi();v75ApplyQueryView();
-  const title=document.querySelector('title');if(title)title.textContent='Planner Life OS 7.5';const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life OS 7.5 · اعلان، صوت و اتوماسیون';
+  const title=document.querySelector('title');if(title)title.textContent='Planner Life for Soil 7.6';const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life for Soil 7.6 · اعلان، صوت و اتوماسیون';
   buildNav();render();v75BindGlobal();setTimeout(()=>v75CheckNotifications(false),1800);
 }
 v75Init();

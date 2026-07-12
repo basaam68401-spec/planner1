@@ -80,3 +80,37 @@ aside{overflow-y:auto;scrollbar-width:thin}.timelineHelp{margin-bottom:10px}.day
 .v75ReportsList{display:grid;gap:10px}.v75ReportCard{border:1px solid var(--line);border-radius:18px;padding:12px;background:#fff;display:grid;gap:10px}.v75ReportTop{display:flex;justify-content:space-between;align-items:center;gap:10px}.v75ReportTop>div{display:grid;gap:3px}.v75ReportTop small{color:var(--muted)}.v75ReportTop>span{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--pd) calc(var(--p,70)*1%),#e8f0e7 0);color:var(--pd);font-weight:900;border:5px solid #fff;box-shadow:0 0 0 1px var(--line)}.v75ReportMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.v75ReportMetrics span{border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:8px;color:var(--muted);font-size:.72rem}.v75ReportMetrics b{color:var(--ink)}.v75ReportActions{display:flex;gap:7px;flex-wrap:wrap}.v75ReportsSection{margin-top:16px}
 @media(max-width:1050px){.v75Fab{left:18px;bottom:92px}.v75ReportMetrics{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.v75Fab{left:14px;bottom:calc(92px + env(safe-area-inset-bottom));min-width:58px;width:58px;height:58px;border-radius:19px;padding:0}.v75Fab small{display:none}.v75QuickModes{grid-template-columns:1fr 1fr}.v75VoiceBar{grid-template-columns:1fr}.v75VoiceBar button{width:100%}.v75Hero,.v75SectionHead{align-items:stretch;flex-direction:column}.v75Hero>div:last-child,.v75TelegramActions{display:grid;grid-template-columns:1fr 1fr}.v75SettingsGrid,.v75TelegramGrid{grid-template-columns:1fr}.v75LogList article{grid-template-columns:auto 1fr}.v75LogList em{grid-column:2}.v75ReportActions{display:grid;grid-template-columns:1fr}.v75ReportMetrics{grid-template-columns:1fr 1fr}}
+
+/* ===== Planner Life for Soil 7.6 ===== */
+.v76DailyCircles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:16px}
+.v76CircleCard{display:grid;place-items:center;gap:8px;min-height:210px;padding:18px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,#fff,#fbfefb);text-align:center;box-shadow:var(--shadow)}
+.v76CircleCard p{margin:0;color:var(--muted);font-size:.86rem}
+.v76Circle{--circle:#2f7a43;width:148px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--circle) calc(var(--p)*1%),#edf2ed 0);position:relative;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
+.v76Circle:before{content:"";position:absolute;inset:14px;background:#fff;border-radius:50%;box-shadow:0 8px 24px rgba(27,56,34,.08)}
+.v76Circle>div{position:relative;z-index:1;display:grid;place-items:center;gap:2px}
+.v76Circle b{font-size:1.65rem}.v76Circle small{color:var(--muted);font-weight:800}
+.v76CircleCard.red .v76Circle{--circle:#d85c5c}.v76CircleCard.orange .v76Circle{--circle:#e7a83d}.v76CircleCard.blue .v76Circle{--circle:#4f8ecb}.v76CircleCard.green .v76Circle{--circle:#2f9b54}
+.v76AlertsFirst,.v76CommandCenter,.v76WheelDashboard,.v76HeatDashboard{margin-bottom:16px}
+.v76SectionTitle,.v76CommandHead{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}
+.v76SectionTitle h3,.v76SectionTitle small,.v76CommandHead h3,.v76CommandHead p,.v76CommandHead small{margin:0}
+.v76SectionTitle small,.v76CommandHead small{color:var(--pd);font-weight:900}
+.safeBadge,.dangerBadge{padding:7px 12px;border-radius:99px;font-size:.8rem;font-weight:900}.safeBadge{background:#e2f7e7;color:#1b7b42}.dangerBadge{background:#ffe7e7;color:#9d2828}
+.v76CommandCenter{background:linear-gradient(135deg,rgba(226,247,231,.92),rgba(255,255,255,.96))}
+.v76CommandActions{display:flex;gap:8px;flex-wrap:wrap}
+.v76ActionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.v76ActionGrid article{min-height:190px;padding:16px;border:1px solid var(--line);border-radius:22px;background:#fff;display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+.v76ActionGrid article.primaryAction{background:linear-gradient(145deg,#2f7a43,#65ac70);color:#fff;border:0}
+.v76ActionGrid article>span{font-size:.82rem;font-weight:900;opacity:.78}.v76ActionGrid article>b{font-size:1.1rem;line-height:1.9}.v76ActionGrid article>small{color:var(--muted);line-height:1.8}.v76ActionGrid article.primaryAction>small{color:#fff}
+.v76ActionGrid article button{margin-top:auto}.v76ActionGrid article.primaryAction button{background:rgba(255,255,255,.94);color:#245f34;border:0}
+.v76ActionGrid .v73Ring{width:92px;height:92px;margin:auto}
+.v76CommandStrip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.v76CommandStrip span{padding:11px 13px;background:rgba(255,255,255,.72);border:1px solid rgba(116,180,123,.24);border-radius:15px;color:var(--muted)}
+.v76CommandStrip b{color:var(--ink);float:left}
+.v76WheelDashboard{padding-bottom:26px}.v76WheelCanvas{width:100%;height:500px!important;display:block}.v73WheelCanvas.large.v76WheelCanvas{height:560px!important}
+.v76HeatDashboard .v73Heat{grid-template-columns:repeat(30,minmax(12px,1fr));gap:6px}
+.v76HeatDashboard .v73Heat span{min-height:20px;border-radius:6px}
+.v76DashboardLower{margin-top:0}.v76DashboardLower>.card{min-height:260px}
+.bottom{grid-template-columns:repeat(5,1fr)!important}
+
+@media(max-width:1100px){.v76DailyCircles,.v76ActionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.v76WheelCanvas{height:430px!important}.v73WheelCanvas.large.v76WheelCanvas{height:470px!important}}
+@media(max-width:700px){.v76DailyCircles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.v76CircleCard{min-height:170px;padding:12px}.v76Circle{width:116px}.v76Circle b{font-size:1.35rem}.v76CommandHead,.v76SectionTitle{align-items:flex-start;flex-direction:column}.v76CommandActions{width:100%}.v76CommandActions button{flex:1}.v76ActionGrid{grid-template-columns:1fr}.v76ActionGrid article{min-height:160px}.v76CommandStrip{grid-template-columns:1fr 1fr}.v76WheelCanvas,.v73WheelCanvas.large.v76WheelCanvas{height:370px!important}.v76HeatDashboard .v73Heat{grid-template-columns:repeat(15,minmax(12px,1fr))}}
