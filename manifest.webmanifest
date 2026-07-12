@@ -4,7 +4,7 @@
   "description": "سیستم شخصی مدیریت زندگی، اهداف، پروژه‌ها، سیستم‌ها، اعلان‌ها و گزارش‌های خودکار با تقویم شمسی چندساله.",
   "lang": "fa",
   "dir": "rtl",
-  "start_url": "./index.html?v=planner-v7-6",
+  "start_url": "./index.html?v=planner-v7-7",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

@@ -1,5 +1,5 @@
-const CACHE='planner-life-for-soil-v7-6';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./v72.js','./v73.js','./v74.js','./v75.js','./v76.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='planner-life-for-soil-v7-7';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./v72.js','./v73.js','./v74.js','./v75.js','./v76.js','./v77.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
