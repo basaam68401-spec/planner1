@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life for Soil 7.6 =====
+// ===== Planner for Best Life 7.6 =====
 // لایه ارتقای امن: تقویم چندساله، نسخه‌بندی داده، بکاپ هفتگی و همگام‌سازی رکوردی.
 const V7_SCHEMA = 'planner-life-os-v7.5';
 const V7_BACKUP_DB = 'planner-life-os-backups';
@@ -146,7 +146,7 @@ function v7SyncYearUi(){
   }
   const brand=document.getElementById('brandYear'); if(brand)brand.textContent=fa(C.year);
   const label=document.getElementById('calendarLabel'); if(label)label.textContent='تقویم شمسی چندساله · سال کاری '+fa(C.year);
-  const title=document.querySelector('title'); if(title)title.textContent='Planner Life for Soil 7.6';
+  const title=document.querySelector('title'); if(title)title.textContent='Planner for Best Life 7.6';
 }
 function v7SetActiveYear(y){
   y=+y;

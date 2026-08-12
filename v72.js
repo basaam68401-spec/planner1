@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life for Soil 7.6 =====
+// ===== Planner for Best Life 7.6 =====
 // اهداف حرفه‌ای، پروژه‌های متصل و سیستم‌ساز شخصی.
 const V72_SCHEMA = 'planner-life-os-v7.5';
 const V72_ACTIVE_GOAL_LIMIT = 7;
@@ -514,8 +514,8 @@ function v72Init(){
   if(typeof fill==='function')fill('#type',C.types.map(x=>[x,x]));
   v72BuildDialogs();v72InstallTaskLinks();
   document.querySelectorAll('#v72AreasDialog input').forEach(x=>x.addEventListener('input',v72UpdateAreaTotal));
-  const oldTitle=document.querySelector('title');if(oldTitle)oldTitle.textContent='Planner Life for Soil 7.6';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life for Soil 7.6 · تقویم شمسی چندساله';
+  const oldTitle=document.querySelector('title');if(oldTitle)oldTitle.textContent='Planner for Best Life 7.6';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner for Best Life 7.6 · تقویم شمسی چندساله';
   localStorage.setItem(K,JSON.stringify(S));buildNav();render();
 }
 

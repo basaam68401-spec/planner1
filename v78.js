@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life for Soil 7.8 =====
+// ===== Planner for Best Life 7.8 =====
 // تایم‌باکسینگ دوحالته افقی و عمودی روی نسخه کامل 7.7.
 const V78_SCHEMA='planner-life-for-soil-v7.8';
 const V78_PX_PER_MINUTE=1.25;
@@ -157,9 +157,9 @@ window.v78VerticalClick=v78VerticalClick;
 window.v78OpenAtMinute=v78OpenAtMinute;
 
 function v78Rename(){
-  document.title='Planner Life for Soil 7.8';
+  document.title='Planner for Best Life 7.8';
   const label=document.getElementById('calendarLabel');
-  if(label)label.textContent='Planner Life for Soil 7.8 · تایم‌باکسینگ افقی و عمودی';
+  if(label)label.textContent='Planner for Best Life 7.8 · تایم‌باکسینگ افقی و عمودی';
 }
 const v78RenderBase=render;
 render=function(){

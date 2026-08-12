@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life for Soil 7.6 =====
+// ===== Planner for Best Life 7.6 =====
 // داشبورد مرکز فرماندهی، چرخ زندگی، امتیاز LEVEL UP، مرورهای روزانه/هفتگی و گزارش‌ها.
 const V73_SCHEMA='planner-life-os-v7.5';
 const V73_DEFAULT_LAYOUT=['alerts','focus','systems','wheel','heat','today','trends'];
@@ -309,7 +309,7 @@ weekly=function(){
 // ===== گزارش‌ها =====
 function v73PrintPersonal(){
   const score=v73LevelUpScore(),areas=(S.areas||[]).filter(a=>a.active!==false),focus=(S.goalsV7||[]).filter(g=>g.status==='focus90'),systems=(S.systems||[]).filter(s=>s.active!==false),wr=v73WeeklyAuto(week(v73Today()).start);
-  document.getElementById('printArea').innerHTML=`<h1>گزارش شخصی Planner Life for Soil</h1><p>تاریخ: ${v73DateLabel(v73Today())}</p><div class="printCard"><h2>امتیاز LEVEL UP: ${fa(score)} از ۱۰۰</h2><p>${v73StatusText(score)}</p></div><div class="printCard"><h2>چرخ زندگی</h2><table><thead><tr><th>حوزه</th><th>وزن</th><th>امتیاز</th></tr></thead><tbody>${areas.map(a=>`<tr><td>${esc(a.title)}</td><td>${fa(a.weight)}٪</td><td>${fa(v73AreaScore(a))}٪</td></tr>`).join('')}</tbody></table></div><div class="printCard"><h2>اهداف ۹۰روزه</h2>${focus.map(g=>`<p><b>${esc(g.title)}</b> — ${fa(v72GoalProgress(g))}٪</p>`).join('')||'<p>ثبت نشده</p>'}</div><div class="printCard"><h2>سیستم‌های فعال</h2>${systems.map(s=>`<p><b>${esc(s.name)}</b> — پایبندی ${fa(v72SystemAdherence(s))}٪</p>`).join('')||'<p>ثبت نشده</p>'}</div><div class="printCard"><h2>هفته جاری</h2><p>تحقق کارها: ${fa(wr.completion)}٪ | انجام‌شده: ${fa(wr.done)} | عقب‌افتاده: ${fa(wr.late)} | اجرای سیستم‌ها: ${fa(wr.systemCompleted)}/${fa(wr.systemRuns)}</p></div>`;
+  document.getElementById('printArea').innerHTML=`<h1>گزارش شخصی Planner for Best Life</h1><p>تاریخ: ${v73DateLabel(v73Today())}</p><div class="printCard"><h2>امتیاز LEVEL UP: ${fa(score)} از ۱۰۰</h2><p>${v73StatusText(score)}</p></div><div class="printCard"><h2>چرخ زندگی</h2><table><thead><tr><th>حوزه</th><th>وزن</th><th>امتیاز</th></tr></thead><tbody>${areas.map(a=>`<tr><td>${esc(a.title)}</td><td>${fa(a.weight)}٪</td><td>${fa(v73AreaScore(a))}٪</td></tr>`).join('')}</tbody></table></div><div class="printCard"><h2>اهداف ۹۰روزه</h2>${focus.map(g=>`<p><b>${esc(g.title)}</b> — ${fa(v72GoalProgress(g))}٪</p>`).join('')||'<p>ثبت نشده</p>'}</div><div class="printCard"><h2>سیستم‌های فعال</h2>${systems.map(s=>`<p><b>${esc(s.name)}</b> — پایبندی ${fa(v72SystemAdherence(s))}٪</p>`).join('')||'<p>ثبت نشده</p>'}</div><div class="printCard"><h2>هفته جاری</h2><p>تحقق کارها: ${fa(wr.completion)}٪ | انجام‌شده: ${fa(wr.done)} | عقب‌افتاده: ${fa(wr.late)} | اجرای سیستم‌ها: ${fa(wr.systemCompleted)}/${fa(wr.systemRuns)}</p></div>`;
   window.print();
 }
 function v73PrintProject(id){
@@ -343,8 +343,8 @@ dash=v73Dashboard;window.dash=dash;
 
 function v73Init(){
   v73EnsureState();v73BuildAreaDialog();v73BuildReviewDialogs();v73CaptureScore();
-  const title=document.querySelector('title');if(title)title.textContent='Planner Life for Soil 7.6';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life for Soil 7.6 · مرکز فرماندهی زندگی';
+  const title=document.querySelector('title');if(title)title.textContent='Planner for Best Life 7.6';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner for Best Life 7.6 · مرکز فرماندهی زندگی';
   const pdf=document.getElementById('pdfBtn');if(pdf){pdf.textContent='گزارش PDF';pdf.onclick=v73PrintPersonal}
   buildNav();render();
 }

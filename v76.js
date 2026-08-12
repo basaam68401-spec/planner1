@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life for Soil 7.6 =====
+// ===== Planner for Best Life 7.6 =====
 // لایه ارتقای رابط بدون حذف داده‌های نسخه‌های قبلی.
 const V76_SCHEMA='planner-life-for-soil-v7.6';
 
@@ -258,7 +258,7 @@ v75DailyDigest=v76DailyDigest;window.v75DailyDigest=v75DailyDigest;
 function v76WeeklyReport(start=week(todayJ()).start,force=false){
   const rid=`weekly_${start}`;let row=(S.autoReports||[]).find(r=>r.id===rid);if(row&&!force)return row;
   const a=v73WeeklyAuto(start),review=S.weeklyReviews?.[start]||{},score=v73LevelUpScore(),red=v73Alerts().filter(x=>x.level==='red').length;
-  const text=[`📈 گزارش هفتگی Planner Life for Soil`,`هفته ${fa(start)} تا ${fa(a.end)}`,'',`تحقق کارها: ${fa(a.completion)}٪`,`انجام‌شده: ${fa(a.done)}`,`عقب‌افتاده: ${fa(a.late)}`,`اجرای سیستم‌ها: ${fa(a.systemCompleted)} از ${fa(a.systemRuns)}`,`پیشرفت اهداف ۹۰روزه: ${fa(a.focus)}٪`,`انرژی میانگین: ${a.energy?fa(a.energy)+'/۵':'ثبت نشده'}`,`LEVEL UP: ${fa(score)}٪`,`هشدار بحرانی: ${fa(red)}`,review.wins?`بردهای هفته: ${review.wins}`:'',review.keyDecision?`تصمیم هفته آینده: ${review.keyDecision}`:''].filter(Boolean).join('\n');
+  const text=[`📈 گزارش هفتگی Planner for Best Life`,`هفته ${fa(start)} تا ${fa(a.end)}`,'',`تحقق کارها: ${fa(a.completion)}٪`,`انجام‌شده: ${fa(a.done)}`,`عقب‌افتاده: ${fa(a.late)}`,`اجرای سیستم‌ها: ${fa(a.systemCompleted)} از ${fa(a.systemRuns)}`,`پیشرفت اهداف ۹۰روزه: ${fa(a.focus)}٪`,`انرژی میانگین: ${a.energy?fa(a.energy)+'/۵':'ثبت نشده'}`,`LEVEL UP: ${fa(score)}٪`,`هشدار بحرانی: ${fa(red)}`,review.wins?`بردهای هفته: ${review.wins}`:'',review.keyDecision?`تصمیم هفته آینده: ${review.keyDecision}`:''].filter(Boolean).join('\n');
   const now=v75Now(),next={id:rid,type:'weekly',title:`گزارش هفتگی ${fa(start)}`,weekStart:start,weekEnd:a.end,metrics:{...a,levelUp:score,critical:red},text,createdAt:row?.createdAt||now,updatedAt:now};
   if(row)Object.assign(row,next);else S.autoReports.unshift(next);S.autoReports=S.autoReports.slice(0,V75_REPORT_LIMIT);save();return next;
 }
@@ -337,10 +337,10 @@ v74Navigate=v76Navigate;window.v74Navigate=v74Navigate;window.v76Navigate=v76Nav
 buildNav=v76BuildNav;window.buildNav=buildNav;
 
 function v76Rename(){
-  document.title='Planner Life for Soil 7.6';
-  const brand=document.querySelector('.brand h1');if(brand)brand.textContent='Planner Life for Soil';
+  document.title='Planner for Best Life 7.6';
+  const brand=document.querySelector('.brand h1');if(brand)brand.textContent='Planner for Best Life';
   const sub=document.querySelector('.brand p');if(sub)sub.textContent='سیستم یکپارچه زندگی، هدف و اقدام';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life for Soil 7.6 · مرکز فرماندهی زندگی';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner for Best Life 7.6 · مرکز فرماندهی زندگی';
   document.querySelectorAll('#v75QuickDialog button[onclick*="v75QuickMoney"]').forEach(b=>b.remove());
 }
 function v76Init(){

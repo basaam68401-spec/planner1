@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== Planner Life for Soil 7.7 =====
+// ===== Planner for Best Life 7.7 =====
 // پیام‌های روزانه سه‌گانه + تبدیل کارت‌های آماری به نمودارهای دایره‌ای.
 const V77_SCHEMA='planner-life-for-soil-v7.7';
 
@@ -163,9 +163,9 @@ function v77Yearly(){
 yearly=v77Yearly;window.yearly=yearly;
 
 function v77Rename(){
-  document.title='Planner Life for Soil 7.7';
-  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner Life for Soil 7.7 · پیام روز، تمرکز و پیشرفت';
-  const brand=document.querySelector('.brand h1');if(brand)brand.textContent='Planner Life for Soil';
+  document.title='Planner for Best Life 7.7';
+  const label=document.getElementById('calendarLabel');if(label)label.textContent='Planner for Best Life 7.7 · پیام روز، تمرکز و پیشرفت';
+  const brand=document.querySelector('.brand h1');if(brand)brand.textContent='Planner for Best Life';
 }
 
 const v77RenderBase=render;
