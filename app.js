@@ -237,7 +237,7 @@ async function cloudSaveNow(force=false){
   if(!cloud.user||!cloud.client||cloud.applying)return;
   try{
     let clean=JSON.parse(JSON.stringify(S));cloud.status='در حال ذخیره ابری...';cloudPaint();
-    let payload={user_id:cloud.user.id,state:clean,local_updated_at:clean.updatedAt||new Date().toISOString(),schema:'planner-for-best-life-v7'};
+    let payload={user_id:cloud.user.id,state:clean,local_updated_at:clean.updatedAt||new Date().toISOString(),schema:'planner-1405-supabase-v7'};
     let req=cloud.client.from(SUPABASE_STATE_TABLE).upsert(payload,{onConflict:'user_id'});
     let {error}=await cloudWithTimeout(req,CLOUD_DATA_TIMEOUT_MS,'timeout-save');
     if(error)throw error;
@@ -247,238 +247,51 @@ async function cloudSaveNow(force=false){
 window.cloudSaveNow=cloudSaveNow;window.cloudPullNow=cloudPullNow;window.cloudTestConnection=cloudTestConnection;
 
 
-// ===== Planner for Best Life v7: daily multi-goal timer strip =====
-C.nav=[
-  ['dashboard','📊','داشبورد','داشبورد مدیریتی'],
-  ['habits','🟩','عادت‌ها','پیگیری عادت‌ها'],
-  ['inbox','📥','Inbox','ورودی‌ها / Inbox'],
-  ['daily','☀️','روزانه','برنامه روزانه'],
-  ['weekly','🗓️','هفتگی','برنامه هفتگی'],
-  ['monthly','📅','ماهانه','برنامه ماهانه'],
-  ['goals','🏆','اهداف','اهداف و پروژه‌ها'],
-  ['yearly','🎯','سالانه','برنامه سالانه'],
-  ['tasks','✅','کارها','مدیریت کارها و جست‌وجو']
-];
-
-function ensureGoalTimers(){
-  let changed=false;
-  if(!S.goalTimers||typeof S.goalTimers!=='object'){
-    S.goalTimers={items:[],logs:{},active:null};changed=true
+// ===== Planner v7: dual time-boxing layouts (RTL horizontal + vertical) =====
+const DAY_TIMELINE_MODE_KEY='planner-day-timeline-mode-v7';
+function getDayTimelineMode(){try{return localStorage.getItem(DAY_TIMELINE_MODE_KEY)==='vertical'?'vertical':'horizontal'}catch(e){return'horizontal'}}
+function setDayTimelineMode(mode){try{localStorage.setItem(DAY_TIMELINE_MODE_KEY,mode==='vertical'?'vertical':'horizontal')}catch(e){}render()}
+function timelineTaskProgress(t){return done(t)?100:cl(+t.progress||0,0,100)}
+function timelineProgressClass(p){return p>=100?'progress100':p>=75?'progress75':p>=50?'progress50':p>=25?'progress25':'progress0'}
+function timelineLayout(ts){
+  let laneEnds=[];
+  return ts.filter(t=>t.start).sort((a,b)=>(a.start||'').localeCompare(b.start||'')).map(t=>{
+    let st=timeMin(t.start),en=timeMin(t.end);
+    if(st===null)st=0;
+    if(en===null||en<=st)en=Math.min(1440,st+60);
+    let lane=laneEnds.findIndex(x=>x<=st);
+    if(lane<0){lane=laneEnds.length;laneEnds.push(en)}else laneEnds[lane]=en;
+    return{t,st,en,lane}
+  })
+}
+function timelineModeControls(mode){return`<div class="timelineModeBar"><div><b>چیدمان تایم‌باکس‌ها</b><small>در نمای افقی، ساعت ۰۰:۰۰ از سمت راست آغاز می‌شود.</small></div><div class="timelineModeSwitch" role="group" aria-label="انتخاب چیدمان"><button type="button" class="${mode==='horizontal'?'primary':''}" aria-pressed="${mode==='horizontal'}" onclick="setDayTimelineMode('horizontal')">افقی ← از راست</button><button type="button" class="${mode==='vertical'?'primary':''}" aria-pressed="${mode==='vertical'}" onclick="setDayTimelineMode('vertical')">عمودی ↓</button></div></div>`}
+function timelineEventMarkup(item,mode,laneCount){
+  let{t,st,en,lane}=item,p=timelineTaskProgress(t),pc=timelineProgressClass(p),duration=Math.max(1,en-st),time=`${esc(t.start||'')} ${t.end?'تا '+esc(t.end):''}`;
+  if(mode==='horizontal'){
+    let right=st/1440*100,width=duration/1440*100,top=58+lane*66;
+    return`<article class="timeboxEvent horizontalEvent ${pc}" style="--progress:${p}%;right:${right}%;width:${width}%;top:${top}px" onclick="event.stopPropagation();openDlg(S.tasks.find(x=>x.id==='${t.id}'))" aria-label="${esc(t.title)}، ${time}، ${fa(p)} درصد"><b>${esc(t.title)}</b><small>${time}</small><span>${fa(p)}٪</span></article>`
   }
-  if(!Array.isArray(S.goalTimers.items)){S.goalTimers.items=[];changed=true}
-  if(!S.goalTimers.logs||typeof S.goalTimers.logs!=='object'){S.goalTimers.logs={};changed=true}
-  S.goalTimers.items.forEach(g=>{
-    if(!g.id){g.id=id();changed=true}
-    if(!g.title){g.title='هدف بدون عنوان';changed=true}
-    if(!Number.isFinite(+g.dailySeconds)||+g.dailySeconds<60){g.dailySeconds=3600;changed=true}
-    if(typeof g.active!=='boolean'){g.active=true;changed=true}
-  });
-  let active=S.goalTimers.active;
-  if(active&&(!active.goalId||!active.date||!Number.isFinite(+active.startedAt))){S.goalTimers.active=null;changed=true}
-  if(changed)localStorage.setItem(K,JSON.stringify(S));
+  let top=st,height=Math.max(42,duration),offset=laneCount>1?lane*2:0;
+  return`<article class="timeboxEvent verticalEvent ${pc}" style="--progress:${p}%;top:${top}px;height:${height}px;right:${1+offset}%;left:${1+Math.max(0,laneCount-lane-1)*2}%" onclick="event.stopPropagation();openDlg(S.tasks.find(x=>x.id==='${t.id}'))" aria-label="${esc(t.title)}، ${time}، ${fa(p)} درصد"><b>${esc(t.title)}</b><small>${time} · ${fa(p)}٪</small></article>`
 }
-
-function goalTimerLog(goalId,date){
-  ensureGoalTimers();
-  S.goalTimers.logs[date]=S.goalTimers.logs[date]||{};
-  let log=S.goalTimers.logs[date][goalId];
-  if(!log||typeof log!=='object')log=S.goalTimers.logs[date][goalId]={seconds:0,sessions:[]};
-  log.seconds=Math.max(0,+log.seconds||0);
-  log.sessions=Array.isArray(log.sessions)?log.sessions:[];
-  return log
+function horizontalDayTimeline(items){
+  let laneCount=Math.max(1,...items.map(x=>x.lane+1)),height=Math.max(190,82+laneCount*66);
+  let ticks=Array.from({length:25},(_,h)=>{let label=h===24?'۲۳:۵۹':fa(pad(h)+':00');return`<span class="horizontalTick" style="right:${h/24*100}%">${label}</span>`}).join('');
+  let lines=Array.from({length:25},(_,h)=>`<i class="horizontalLine" style="right:${h/24*100}%"></i>`).join('');
+  return`<div class="horizontalTimelineScroller"><div class="horizontalTimeline" style="height:${height}px" onclick="timelineHorizontalClick(event)"><div class="horizontalAxis">${ticks}</div>${lines}${items.map(x=>timelineEventMarkup(x,'horizontal',laneCount)).join('')}</div></div>`
 }
-
-function goalTimerGoal(goalId){return S.goalTimers.items.find(g=>g.id===goalId)}
-
-function goalTimerElapsed(goalId,date){
-  let log=goalTimerLog(goalId,date),active=S.goalTimers.active;
-  if(active&&active.goalId===goalId&&active.date===date){
-    let base=Number.isFinite(+active.baseSeconds)?+active.baseSeconds:log.seconds;
-    return base+Math.max(0,(Date.now()-(+active.startedAt||Date.now()))/1000)
-  }
-  return log.seconds
+function verticalDayTimeline(items){
+  let laneCount=Math.max(1,...items.map(x=>x.lane+1));
+  let labels=Array.from({length:25},(_,h)=>`<div class="timelineLabel" style="top:${h*60}px">${h===24?'۲۳:۵۹':fa(pad(h)+':00')}</div>`).join('');
+  let lines=Array.from({length:25},(_,h)=>`<div class="timelineLine" style="top:${h*60}px"></div>`).join('');
+  return`<div class="dayTimelineV7"><div class="timelineLabels">${labels}</div><div class="timelineCanvas" onclick="timelineClick(event)">${lines}${items.map(x=>timelineEventMarkup(x,'vertical',laneCount)).join('')}</div></div>`
 }
-
-function goalTimerCommitActive(){
-  ensureGoalTimers();
-  let active=S.goalTimers.active;
-  if(!active)return false;
-  let goal=goalTimerGoal(active.goalId),log=goalTimerLog(active.goalId,active.date);
-  let base=Number.isFinite(+active.baseSeconds)?+active.baseSeconds:log.seconds;
-  let delta=Math.max(0,(Date.now()-(+active.startedAt||Date.now()))/1000);
-  let target=goal?+goal.dailySeconds:Infinity;
-  log.seconds=Math.min(target,base+delta);
-  if(delta>=1){
-    log.sessions.push({startedAt:new Date(+active.startedAt).toISOString(),endedAt:new Date().toISOString(),seconds:Math.round(delta)});
-    if(log.sessions.length>100)log.sessions=log.sessions.slice(-100)
-  }
-  S.goalTimers.active=null;
-  return true
+function dayTimeline(d,ts){
+  let mode=getDayTimelineMode(),uns=ts.filter(t=>!t.start),items=timelineLayout(ts);
+  return`${timelineModeControls(mode)}${uns.length?`<div class="unscheduled"><b>بدون ساعت:</b>${uns.map(t=>`<button onclick="openDlg(S.tasks.find(x=>x.id==='${t.id}'))">${esc(t.title)}</button>`).join('')}</div>`:''}<div class="timelineHelp muted">روی فضای خالی بزن تا یک باکس یک‌ساعته بسازی؛ درصد پیشرفت با میزان رنگ داخل هر باکس نمایش داده می‌شود.</div>${mode==='vertical'?verticalDayTimeline(items):horizontalDayTimeline(items)}`
 }
-
-function goalTimerToggle(goalId){
-  ensureGoalTimers();
-  let goal=goalTimerGoal(goalId);
-  if(!goal||goal.active===false)return;
-  let current=S.goalTimers.active;
-  if(current&&current.goalId===goalId&&current.date===sel){
-    goalTimerCommitActive();save();mountDailyGoalTimers();return
-  }
-  if(current)goalTimerCommitActive();
-  let log=goalTimerLog(goalId,sel);
-  if(log.seconds>=goal.dailySeconds){save();mountDailyGoalTimers();return}
-  S.goalTimers.active={goalId,date:sel,startedAt:Date.now(),baseSeconds:log.seconds};
-  save();mountDailyGoalTimers()
-}
-
-function goalTimerFormat(seconds){
-  let value=Math.max(0,Math.floor(seconds)),hours=Math.floor(value/3600),minutes=Math.floor(value%3600/60),secs=value%60;
-  return fa([hours,minutes,secs].map(x=>pad(x)).join(':'))
-}
-
-function goalTimerHuman(seconds,precise=false){
-  let value=Math.max(0,Math.round(seconds)),hours=Math.floor(value/3600),minutes=Math.floor(value%3600/60),secs=value%60;
-  if(precise&&value<60)return fa(secs)+' ثانیه';
-  if(hours&&minutes)return fa(hours)+' ساعت و '+fa(minutes)+' دقیقه';
-  if(hours)return fa(hours)+' ساعت';
-  return fa(minutes)+' دقیقه'
-}
-
-function goalTimerColor(progress){
-  let p=cl(progress,0,100),hue=Math.round(42+p*.93),light=Math.round(72-p*.18);
-  return `hsl(${hue} 58% ${light}%)`
-}
-
-function goalTimerSegmentMarkup(goal,date){
-  let elapsed=Math.min(goal.dailySeconds,goalTimerElapsed(goal.id,date)),progress=goal.dailySeconds?cl(elapsed/goal.dailySeconds*100,0,100):0;
-  let active=S.goalTimers.active&&S.goalTimers.active.goalId===goal.id&&S.goalTimers.active.date===date;
-  let complete=progress>=100,remaining=Math.max(0,goal.dailySeconds-elapsed),state=complete?'تکمیل شد':active?'زمان‌سنج فعال است':goalTimerHuman(remaining,true)+' مانده';
-  return `<section class="goalTimerSegment ${active?'running':''} ${complete?'complete':''}" data-goal-timer-id="${goal.id}" style="flex:${Math.max(60,+goal.dailySeconds)} 1 0;--progress:${progress.toFixed(2)}%;--progress-color:${goalTimerColor(progress)}" aria-label="${esc(goal.title)}، ${fa(Math.floor(progress))} درصد تکمیل شده">
-    <span class="goalTimerFill" aria-hidden="true"></span>
-    <div class="goalTimerContent">
-      <div><span class="goalTimerTitle">${esc(goal.title)}</span><span class="goalTimerPercent">${fa(Math.floor(progress))}٪</span></div>
-      <div class="goalTimerControls">
-        <time class="goalTimerClock">${goalTimerFormat(elapsed)} / ${goalTimerFormat(goal.dailySeconds)}</time>
-        <span class="goalTimerState">${state}</span>
-        <button type="button" class="goalTimerBtn ${active?'danger':'primary'}" onclick="goalTimerToggle('${goal.id}')" ${complete?'disabled':''}>${complete?'تکمیل‌شده':active?'توقف':'شروع'}</button>
-      </div>
-    </div>
-  </section>`
-}
-
-function dailyGoalTimersMarkup(date){
-  ensureGoalTimers();
-  let goals=S.goalTimers.items.filter(g=>g.active!==false),planned=goals.reduce((sum,g)=>sum+(+g.dailySeconds||0),0),elapsed=goals.reduce((sum,g)=>sum+Math.min(+g.dailySeconds||0,goalTimerElapsed(g.id,date)),0),progress=planned?Math.floor(elapsed/planned*100):0;
-  let content=goals.length?`<div class="goalTimerViewport"><div class="goalTimerStrip" style="--goal-count:${goals.length}">${goals.map(g=>goalTimerSegmentMarkup(g,date)).join('')}</div></div>`:`<div class="goalTimerEmpty"><span>هنوز هدف زمان‌محوری برای برنامه روزانه تعریف نشده است.</span><button type="button" class="primary" onclick="openGoalTimerManager()">تعریف اولین هدف</button></div>`;
-  return `<section class="card goalTimerCard">
-    <div class="goalTimerHead"><div><h3>زمان اهداف و پروژه‌ها</h3><p class="muted">یک نوار روزانه برای پیشبرد هدف‌هایی که چند روز یا چند هفته ادامه دارند</p></div><button type="button" onclick="openGoalTimerManager()">مدیریت اهداف زمان‌محور</button></div>
-    <div class="goalTimerSummary"><span>زمان برنامه‌ریزی‌شده: <b>${goalTimerHuman(planned)}</b></span><span>زمان ثبت‌شده: <b data-goal-total-elapsed>${goalTimerHuman(elapsed)}</b></span><span>پیشرفت امروز: <b data-goal-total-progress>${fa(progress)}٪</b></span></div>
-    ${content}
-  </section>`
-}
-
-function mountDailyGoalTimers(){
-  if(view!=='daily'||!$('#app'))return;
-  let previous=$('#app .goalTimerCard');if(previous)previous.remove();
-  let cards=$$('#app > .card'),anchor=cards[1]||cards[0];
-  if(anchor)anchor.insertAdjacentHTML('afterend',dailyGoalTimersMarkup(sel));
-  else $('#app').insertAdjacentHTML('afterbegin',dailyGoalTimersMarkup(sel))
-}
-
-function goalTimerManagerMarkup(){
-  ensureGoalTimers();
-  let items=S.goalTimers.items;
-  return `<section class="card goalTimerManager" id="goalTimerManager">
-    ${rowTitle('اهداف زمان‌محور روزانه','<span class="muted">این هدف‌ها هر روز در نوار صفحه روزانه نمایش داده می‌شوند</span>')}
-    <p class="muted">برای هر هدف یا پروژه، زمان موردنظر روزانه را تعیین کن. زمان ثبت‌شده هر روز جدا نگهداری می‌شود و هدف تا وقتی فعال است در روزهای بعد نیز باقی می‌ماند.</p>
-    <div class="goalTimerAdd">
-      <label>عنوان هدف یا پروژه<input id="goalTimerTitle" placeholder="مثلاً تکمیل مقاله یا آمادگی آزمون EPT"></label>
-      <label>زمان روزانه به دقیقه<input id="goalTimerMinutes" type="number" min="1" max="720" value="60"></label>
-      <button type="button" class="primary" onclick="goalTimerAdd()">+ افزودن هدف</button>
-    </div>
-    <div class="goalTimerItems">${items.length?items.map(g=>`<article class="goalTimerItem">
-      <label>عنوان<input value="${esc(g.title)}" onchange="goalTimerSet('${g.id}','title',this.value)"></label>
-      <label>دقیقه در روز<input type="number" min="1" max="720" value="${Math.round(g.dailySeconds/60)}" onchange="goalTimerSet('${g.id}','minutes',this.value)"></label>
-      <label class="timerActive"><input type="checkbox" ${g.active!==false?'checked':''} onchange="goalTimerSet('${g.id}','active',this.checked)">نمایش در روزانه</label>
-      <button type="button" class="danger" onclick="goalTimerDelete('${g.id}')">حذف</button>
-    </article>`).join(''):'<div class="empty">هنوز هدف زمان‌محوری تعریف نشده است.</div>'}</div>
-    <p class="goalTimerNotice">در هر لحظه فقط یک زمان‌سنج فعال می‌ماند. با شروع هدف دیگر، زمان هدف قبلی ثبت و متوقف می‌شود.</p>
-  </section>`
-}
-
-function goalTimerAdd(){
-  ensureGoalTimers();
-  let title=$('#goalTimerTitle')?.value.trim(),minutes=cl(+$('#goalTimerMinutes')?.value||0,1,720);
-  if(!title)return alert('عنوان هدف یا پروژه را وارد کن.');
-  S.goalTimers.items.push({id:id(),title,dailySeconds:Math.round(minutes*60),active:true,createdAt:new Date().toISOString()});
-  save();render()
-}
-
-function goalTimerSet(goalId,field,value){
-  ensureGoalTimers();
-  let goal=goalTimerGoal(goalId);if(!goal)return;
-  if(field==='title'){let title=String(value||'').trim();if(!title)return;goal.title=title}
-  if(field==='minutes')goal.dailySeconds=Math.round(cl(+value||1,1,720)*60);
-  if(field==='active'){
-    goal.active=!!value;
-    if(!goal.active&&S.goalTimers.active?.goalId===goalId)goalTimerCommitActive()
-  }
-  goal.updatedAt=new Date().toISOString();save();render()
-}
-
-function goalTimerDelete(goalId){
-  let goal=goalTimerGoal(goalId);if(!goal||!confirm('این هدف زمان‌محور و سابقه زمان‌های آن حذف شود؟'))return;
-  if(S.goalTimers.active?.goalId===goalId)goalTimerCommitActive();
-  S.goalTimers.items=S.goalTimers.items.filter(g=>g.id!==goalId);
-  Object.keys(S.goalTimers.logs).forEach(date=>{delete S.goalTimers.logs[date][goalId]});
-  save();render()
-}
-
-function openGoalTimerManager(){
-  if(S.goalTimers.active&&view==='daily')goalTimerCommitActive();
-  view='goals';$('#pageTitle').textContent='اهداف و پروژه‌ها';buildNav();render();
-  setTimeout(()=>$('#goalTimerManager')?.scrollIntoView({behavior:'smooth',block:'start'}),40)
-}
-
-function goalTimerTick(){
-  ensureGoalTimers();
-  let active=S.goalTimers.active;
-  if(!active)return;
-  let goal=goalTimerGoal(active.goalId);
-  if(!goal){S.goalTimers.active=null;save();return}
-  let elapsed=goalTimerElapsed(goal.id,active.date);
-  if(elapsed>=goal.dailySeconds){goalTimerCommitActive();save();if(view==='daily')mountDailyGoalTimers();return}
-  if(view!=='daily'||active.date!==sel)return;
-  let segment=$(`[data-goal-timer-id="${goal.id}"]`);if(!segment)return;
-  let progress=cl(elapsed/goal.dailySeconds*100,0,100),remaining=Math.max(0,goal.dailySeconds-elapsed);
-  segment.style.setProperty('--progress',progress.toFixed(2)+'%');segment.style.setProperty('--progress-color',goalTimerColor(progress));
-  segment.querySelector('.goalTimerPercent').textContent=fa(Math.floor(progress))+'٪';
-  segment.querySelector('.goalTimerClock').textContent=goalTimerFormat(elapsed)+' / '+goalTimerFormat(goal.dailySeconds);
-  segment.querySelector('.goalTimerState').textContent=goalTimerHuman(remaining,true)+' مانده';
-  let goals=S.goalTimers.items.filter(g=>g.active!==false),planned=goals.reduce((sum,g)=>sum+(+g.dailySeconds||0),0),total=goals.reduce((sum,g)=>sum+Math.min(+g.dailySeconds||0,goalTimerElapsed(g.id,sel)),0),overall=planned?Math.floor(total/planned*100):0;
-  let totalElapsed=$('[data-goal-total-elapsed]'),totalProgress=$('[data-goal-total-progress]');
-  if(totalElapsed)totalElapsed.textContent=goalTimerHuman(total);if(totalProgress)totalProgress.textContent=fa(overall)+'٪'
-}
-
-var dailyV6=daily;
-daily=function(){dailyV6();mountDailyGoalTimers()};
-
-var goalsViewV6=goalsView;
-goalsView=function(){goalsViewV6();$('#app').insertAdjacentHTML('afterbegin',goalTimerManagerMarkup())};
-
-printPDF=function(){
-  let yr=yrange(),tj=todayJ(),wr=week(tj),mr=mrange(tj.slice(0,7)),secs=[['امروز',dayTasks(tj)],['این هفته',inRange(wr.start,wr.end)],['این ماه',inRange(mr.start,mr.end)],['سال ۱۴۰۵',inRange(yr.start,yr.end)]];
-  $('#printArea').innerHTML=`<h1>گزارش Planner for Best Life</h1><p>تاریخ گزارش: ${showDate(tj)}</p>${secs.map(s=>{let m=met(s[1]);return`<div class="printCard"><h2>${s[0]}</h2><p>تحقق: ${fa(m.comp)}٪ | انجام‌شده: ${fa(m.d)} | باقی‌مانده: ${fa(m.todo)} | عقب‌افتاده: ${fa(m.l)}</p>${table(s[1]).replace(/<button[\s\S]*?<\/button>/g,'')}</div>`}).join('')}`;
-  window.print()
-};
-
-backup=function(){
-  let blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=u;a.download='planner-for-best-life-backup.json';a.click();URL.revokeObjectURL(u)
-};
-
-window.goalTimerToggle=goalTimerToggle;window.goalTimerAdd=goalTimerAdd;window.goalTimerSet=goalTimerSet;window.goalTimerDelete=goalTimerDelete;window.openGoalTimerManager=openGoalTimerManager;
-ensureGoalTimers();
-setInterval(goalTimerTick,1000);
+function timelineHorizontalClick(e){let c=e.currentTarget.getBoundingClientRect(),x=cl(c.right-e.clientX,0,c.width),mins=cl(Math.round((x/c.width*1440)/30)*30,0,1439),h=Math.floor(mins/60),m=mins%60;openDlg(null,sel);$('#start').value=pad(h)+':'+pad(m);let endM=Math.min(1439,mins+60);$('#end').value=pad(Math.floor(endM/60))+':'+pad(endM%60)}
+window.setDayTimelineMode=setDayTimelineMode;
+window.timelineHorizontalClick=timelineHorizontalClick;
 
 init();
