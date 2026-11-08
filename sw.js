@@ -1,4 +1,4 @@
-const CACHE='planner-for-best-life-v7-8-2';
+const CACHE='planner-for-best-life-v7-8-3';
 const ASSETS=['./','./index.html','./styles.css','./app.js','./v7.js','./v72.js','./v73.js','./v74.js','./v75.js','./v76.js','./v77.js','./v78.js','./v781.js','./v782.js','./push.js','./supabase-config.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 
 self.addEventListener('install',event=>{

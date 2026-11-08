@@ -1,7 +1,7 @@
 'use strict';
 
-// Planner for Best Life 7.8.2. Additive UI and state changes over the real 7.8.1.
-const V782_VERSION='7.8.2';
+// Planner for Best Life 7.8.3. Additive UI and state changes over the real 7.8.1.
+const V782_VERSION='7.8.3';
 const V782_WEEK='weeklyInvestmentV782';
 const V782_TASK_TIME='weeklyTaskTimeV782';
 const V782_RATINGS=['ضعیف','متوسط','خوب','عالی'];
@@ -13,7 +13,7 @@ function v782State(){
   S.daily=S.daily||{};
   S[V782_WEEK]=S[V782_WEEK]&&typeof S[V782_WEEK]==='object'?S[V782_WEEK]:{};
   S[V782_TASK_TIME]=S[V782_TASK_TIME]&&typeof S[V782_TASK_TIME]==='object'?S[V782_TASK_TIME]:{};
-  S.meta=S.meta||{};S.meta.schemaVersion='planner-for-best-life-v7.8.2';
+  S.meta=S.meta||{};S.meta.schemaVersion='planner-for-best-life-v7.8.3';
   window.S=S;
 }
 function v782Rows(start){v782State();return S[V782_WEEK][start]||[]}
@@ -28,15 +28,15 @@ function v782Motivation(){
 }
 function v782SetNav(){
   v781SetNav();
-  C.nav=C.nav.filter(n=>!['projectsV7','loansV7','financeV7','systemsV7','wheelV7'].includes(n[0]));
-  const order=['dashboard','habits','inbox','weekly','daily','monthly','yearly'];
-  C.nav.sort((a,b)=>{let ai=order.indexOf(a[0]),bi=order.indexOf(b[0]);return (ai<0?99:ai)-(bi<0?99:bi)});
+  const order=['inbox','weekly','daily','monthly','yearly','habits','dashboard','goalsV7','tasks','reviewsV7','automationV7','reportsV7'];
+  const byKey=new Map(C.nav.map(item=>[item[0],item]));
+  C.nav=order.map(key=>byKey.get(key)).filter(Boolean);
 }
 function v782BuildNav(){
   v782SetNav();
   const nav=(items)=>items.map(n=>`<button class="nav ${view===n[0]?'active':''}" data-v="${n[0]}"><span>${n[1]}</span><span>${n[2]}</span></button>`).join('');
   document.getElementById('sideNav').innerHTML=nav(C.nav);
-  const primary=['dashboard','weekly','daily','monthly'];
+  const primary=['inbox','weekly','daily','monthly'];
   document.getElementById('bottomNav').innerHTML=nav(primary.map(k=>C.nav.find(n=>n[0]===k)).filter(Boolean))+`<button class="nav" id="v74MoreNavBtn"><span>☰</span><span>بیشتر</span></button>`;
   document.querySelectorAll('#sideNav .nav,#bottomNav .nav[data-v]').forEach(b=>b.onclick=()=>v781Navigate(b.dataset.v));
   document.getElementById('v74MoreNavBtn').onclick=()=>{const grid=document.getElementById('v74MoreNavGrid');if(grid)grid.innerHTML=C.nav.filter(n=>!primary.includes(n[0])).map(n=>`<button type="button" onclick="v781Navigate('${n[0]}')"><span>${n[1]}</span><b>${n[2]}</b></button>`).join('');document.getElementById('v74MoreNavDialog')?.showModal()};
@@ -230,6 +230,6 @@ if(typeof v7MergeStates==='function'){
 }
 if(localStorage.getItem(K)&&!localStorage.getItem('planner-v782-preupgrade-backup-done')){
   const before=JSON.parse(localStorage.getItem(K));
-  v7CreateSnapshotFromState(before,'پیش از ارتقا به 7.8.2').then(()=>localStorage.setItem('planner-v782-preupgrade-backup-done','1')).catch(e=>console.warn('Pre-upgrade backup failed',e));
+  v7CreateSnapshotFromState(before,'پیش از ارتقا به 7.8.3').then(()=>localStorage.setItem('planner-v782-preupgrade-backup-done','1')).catch(e=>console.warn('Pre-upgrade backup failed',e));
 }
 v782State();buildNav();render();
