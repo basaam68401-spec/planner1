@@ -1,10 +1,11 @@
 {
   "name": "Planner for Best Life",
   "short_name": "Best Life",
-  "description": "سیستم شخصی مدیریت زندگی، اهداف، پروژه‌ها، عادت‌ها، اعلان‌ها و گزارش‌های خودکار با تقویم شمسی چندساله.",
+  "description": "پلنر شخصی اهداف، کارها، عادت‌ها و یادآوری‌ها با تقویم شمسی.",
   "lang": "fa",
   "dir": "rtl",
-  "start_url": "./index.html?v=planner-v7-8-1",
+  "id": "./",
+  "start_url": "./index.html?v=planner-v7-8-2",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

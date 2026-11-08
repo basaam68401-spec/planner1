@@ -296,17 +296,13 @@ function dailyDigest(state: any, today: string, now: Date) {
       const priority: Record<string, number> = { بالا: 3, متوسط: 2, پایین: 1 };
       return (priority[b.priority] || 0) - (priority[a.priority] || 0) || String(a.start || '99:99').localeCompare(String(b.start || '99:99'));
     });
-  const dueSystems = (state?.systems || []).filter((system: any) => system.active !== false && system.nextRunDate && system.nextRunDate <= today).length;
   const overdueTasks = (state?.tasks || []).filter((task: any) => task.jDate < today && !done(task) && !cancelled(task)).length;
-  const overdueProjects = (state?.projects || []).filter((project: any) => project.due && project.due < today && !['completed', 'cancelled'].includes(project.status)).length;
-  const overdueInstallments = (state?.installments || []).filter((installment: any) => installment.status !== 'paid' && installment.dueDate < today).length;
-  const critical = overdueTasks + overdueProjects + overdueInstallments;
+  const critical = overdueTasks;
   const top = tasks.slice(0, 3).map((task: any) => task.title).join('، ') || 'کار ثبت‌شده‌ای وجود ندارد';
   return [
     `📊 خلاصه امروز ${fa(today)}`,
     '',
     `کارهای فعال: ${fa(tasks.length)}`,
-    `سیستم‌های موعددار: ${fa(dueSystems)}`,
     `هشدارهای نیازمند توجه: ${fa(critical)}`,
     `اولویت‌ها: ${top}`,
     `LEVEL UP: ${fa(levelUpScore(state, now))}٪`,
@@ -335,7 +331,6 @@ function weeklyDigest(state: any, today: string, weekday: string, now: Date) {
     `تحقق کارها: ${fa(completion)}٪`,
     `انجام‌شده: ${fa(doneCount)}`,
     `عقب‌افتاده: ${fa(lateCount)}`,
-    `اجرای سیستم‌ها: ${fa(runs.filter((run: any) => run.status === 'completed').length)} از ${fa(runs.length)}`,
     `پیشرفت اهداف ۹۰روزه: ${fa(average(focus.map((goal: any) => goalProgress(goal, state))))}٪`,
     `انرژی میانگین: ${energyValues.length ? `${fa(average(energyValues))}/۵` : 'ثبت نشده'}`,
     `LEVEL UP: ${fa(levelUpScore(state, now))}٪`,
@@ -346,27 +341,11 @@ function weeklyDigest(state: any, today: string, weekday: string, now: Date) {
 
 function criticalEvents(state: any, today: string) {
   const events: Array<{ key: string; text: string }> = [];
-  const tomorrow = addDays(today, 1);
-  for (const installment of (state?.installments || []).filter((item: any) => item.status !== 'paid' && item.dueDate <= tomorrow)) {
-    const loan = (state?.loans || []).find((item: any) => item.id === installment.loanId);
-    const label = installment.dueDate < today ? 'قسط عقب‌افتاده' : installment.dueDate === today ? 'قسط امروز' : 'قسط فردا';
-    events.push({
-      key: `installment:${installment.id}:${installment.dueDate}`,
-      text: `🔴 ${label}\n${loan?.title || loan?.lender || 'وام'} — ${money(installment.amount)}\nسررسید: ${fa(installment.dueDate)}`,
-    });
-  }
-  for (const project of (state?.projects || []).filter((item: any) => item.due && item.due < today && !['completed', 'cancelled'].includes(item.status)).slice(0, 3)) {
-    events.push({ key: `project:${project.id}:${today}`, text: `🔴 پروژه گذشته از مهلت\n${project.title}\nمهلت: ${fa(project.due)}` });
-  }
   for (const task of (state?.tasks || []).filter((item: any) => item.priority === 'بالا' && item.jDate < today && !done(item) && !cancelled(item)).slice(0, 3)) {
     events.push({ key: `task:${task.id}:${today}`, text: `🔴 کار مهم عقب‌افتاده\n${task.title}\nتاریخ: ${fa(task.jDate)}` });
   }
   for (const goal of (state?.goalsV7 || []).filter((item: any) => ['active', 'focus90'].includes(item.status) && item.due && goalProgress(item, state) < 100 && jDateDiff(today, item.due) >= 0 && jDateDiff(today, item.due) <= 3).slice(0, 3)) {
     events.push({ key: `goal:${goal.id}:${today}`, text: `🟡 هدف نزدیک به مهلت\n${goal.title}\n${fa(jDateDiff(today, goal.due))} روز مانده — پیشرفت ${fa(goalProgress(goal, state))}٪` });
-  }
-  for (const system of (state?.systems || []).filter((item: any) => item.active !== false && item.nextRunDate && item.nextRunDate <= today).slice(0, 3)) {
-    const active = (state?.systemRuns || []).some((run: any) => run.systemId === system.id && run.status === 'active');
-    if (!active) events.push({ key: `system:${system.id}:${today}`, text: `🟡 سیستم موعد اجرا دارد\n${system.name}` });
   }
   return events.slice(0, MAX_MESSAGES_PER_USER);
 }
@@ -436,7 +415,7 @@ Deno.serve(async (req: Request) => {
         throw claimError;
       }
       try {
-        const messageId = await telegramSend(botToken, chatId, text);
+        const messageId = await telegramSend(botToken!, chatId, text);
         await supabase.from('planner_cron_deliveries').update({ status: 'sent', sent_at: new Date().toISOString(), telegram_message_id: messageId }).eq('user_id', row.user_id).eq('dedupe_key', dedupeKey);
         sent.push(dedupeKey);
       } catch (error) {
